@@ -12,7 +12,7 @@
 - 🌊 **Monitoreo en Tiempo Real** - Actualización automática cada 3 segundos
 - 📊 **4 Variables Hidrológicas** - Flujo, Nivel, Caudal y Velocidad  
 - 📈 **Gráficos Especializados** - Visualizaciones adaptadas por tipo de métrica
-- 🗺️ **Mapa Interactivo** - Ubicación de estaciones en tiempo real
+- 🗺️ **Mapa Interactivo** - Estaciones arrastrables para planificación de ubicaciones futuras
 - 📱 **Totalmente Responsivo** - Optimizado para desktop, tablet y móvil
 - 🎨 **Sistema de Temas** - Claro, oscuro y automático
 - 📄 **Reportes con IA** - Generación automática de reportes PDF/Excel

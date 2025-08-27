@@ -139,7 +139,7 @@ const MainContent = () => {
       {/* Grid principal del dashboard */}
       <DashboardGrid {...dashboardProps} />
       
-      {/* Mapa climático */}
+      {/* Mapa climático con estaciones arrastrables */}
       <LazyRioClaroStationsMap />
       
       {/* Modal de pantalla completa */}
@@ -243,6 +243,158 @@ className={`${
   <UserMenu />
 </div>
 ```
+
+## 🗺️ **Mapa Interactivo de Estaciones - RioClaroStationsMap**
+
+### Funcionalidad de Estaciones Arrastrables
+
+El mapa de estaciones del Río Claro incluye una funcionalidad avanzada que permite **arrastrar y reposicionar** las estaciones de monitoreo para planificar ubicaciones futuras.
+
+#### ✨ **Características Principales**
+
+1. **🖱️ Arrastre Interactivo**
+   - Las estaciones se pueden mover haciendo clic y arrastrando
+   - Cursor cambia a "mano" (`grab`) al pasar sobre las estaciones
+   - Cursor cambia a "puño cerrado" (`grabbing`) durante el arrastre
+
+2. **📍 Persistencia de Posición**
+   - Las nuevas posiciones se mantienen durante las actualizaciones automáticas de datos
+   - No se pierden las coordenadas personalizadas al refrescarse los sensores cada 3 segundos
+
+3. **📊 Feedback Visual**
+   - Efecto hover con aumento de escala (1.1x)
+   - Mensaje indicativo durante el arrastre en popup y panel lateral
+   - Coordenadas actualizadas en tiempo real
+
+4. **🎯 Captura de Coordenadas**
+   - Coordenadas precisas (6 decimales) en popups
+   - Coordenadas resumidas (4 decimales) en panel lateral  
+   - **Notificación toast elegante** desde la parte inferior (5 segundos)
+   - Log detallado en consola del navegador
+
+#### 🔧 **Implementación Técnica**
+
+```typescript
+// Estados para arrastre optimizado y notificaciones
+const [stationPositions, setStationPositions] = useState<Record<string, [number, number]>>({});
+const [isDragging, setIsDragging] = useState<string | null>(null);
+const [dragPosition, setDragPosition] = useState<Record<string, [number, number]>>({});
+const [toast, setToast] = useState<{show: boolean, message: string, stationName: string, coordinates: string} | null>(null);
+
+// Marcadores arrastrables con eventos optimizados
+<Marker
+  draggable={true}
+  position={dragPosition[station.id] || stationPositions[station.id] || station.coordinates}
+  eventHandlers={{
+    dragstart: () => setIsDragging(station.id),
+    drag: (e) => updateDragPosition(station.id, [lat, lng]), // Solo actualiza posición temporal
+    dragend: (e) => {
+      updateStationPosition(station.id, [lat, lng]); // Confirma posición final
+      showToast(station.name, lat, lng); // Muestra notificación elegante
+      setIsDragging(null);
+    }
+  }}
+/>
+```
+
+#### ⚡ **Optimizaciones de Rendimiento**
+
+1. **Pausado de Actualizaciones**: Las actualizaciones automáticas se detienen durante el arrastre
+2. **Estados Separados**: Posición temporal (`dragPosition`) vs persistente (`stationPositions`)
+3. **Cache de Iconos**: Los iconos SVG se almacenan en cache para evitar re-creación
+4. **CSS Optimizado**: Transiciones removidas durante el drag para máxima fluidez
+5. **Canvas Preferido**: Leaflet configurado con `preferCanvas={true}` para mejor rendimiento
+
+#### 🔄 **Botón de Restablecimiento**
+
+- Aparece automáticamente cuando hay estaciones movidas
+- Permite restaurar todas las posiciones a ubicaciones originales  
+- Confirmación mediante notificación toast elegante
+
+#### 🍞 **Sistema de Notificaciones Toast**
+
+**Características del Toast:**
+- **Posición**: Centrado en la parte inferior de la pantalla
+- **Duración**: 5 segundos con auto-desaparición
+- **Animación**: Deslizamiento suave desde abajo + fade in/out
+- **Contenido**: Nombre de estación + coordenadas exactas
+- **Progreso**: Barra visual que indica tiempo restante
+- **Diseño**: Fondo semitransparente con blur effect
+- **Responsive**: Se adapta a diferentes tamaños de pantalla
+
+**Implementación:**
+```typescript
+// Estado del toast
+const [toast, setToast] = useState<{
+  show: boolean, 
+  message: string, 
+  stationName: string, 
+  coordinates: string
+} | null>(null);
+
+// Función para mostrar notificación
+const showToast = (stationName: string, lat: number, lng: number) => {
+  setToast({
+    show: true,
+    message: 'reubicada en:',
+    stationName: stationName,
+    coordinates: `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+  });
+  
+  // Auto-hide después de 5 segundos
+  setTimeout(() => setToast(prev => prev ? { ...prev, show: false } : null), 5000);
+  setTimeout(() => setToast(null), 5500);
+};
+```
+
+**Estilos CSS:**
+```css
+/* Animaciones suaves de entrada y salida */
+.toast-enter {
+  transform: translateY(100%) translateX(-50%);
+  opacity: 0;
+}
+
+.toast-show {
+  transform: translateY(0) translateX(-50%);
+  opacity: 1;
+  transition: all 500ms ease-out;
+}
+
+/* Barra de progreso animada */
+.progress-bar {
+  width: 100% → 0%;
+  transition: width 5000ms linear;
+}
+```
+
+#### 📱 **Responsive y Accesibilidad**
+
+- Funciona en dispositivos táctiles (móviles/tablets)
+- Transiciones suaves durante el arrastre
+- Tooltips informativos con instrucciones de uso
+
+#### 💡 **Casos de Uso**
+
+- **Planificación:** Determinar ubicaciones óptimas para nuevas estaciones
+- **Simulación:** Evaluar cobertura geográfica alternativa  
+- **Presentaciones:** Mostrar diferentes escenarios de despliegue
+- **Análisis:** Obtener coordenadas exactas para instalación física
+
+#### 📝 **Instrucciones para Usuarios**
+
+1. **Mover Estación:** Clic y arrastrar sobre cualquier marcador de estación (arrastre completamente fluido)
+2. **Ver Coordenadas:** Las nuevas coordenadas aparecen instantáneamente en popup y panel
+3. **Confirmar Posición:** Al soltar, aparece una **notificación toast elegante** desde abajo con las coordenadas exactas
+4. **Toast de 5 segundos:** La notificación se auto-oculta con barra de progreso visual
+5. **Restablecer:** Usar el botón "🔄 Restablecer" en el panel lateral (también muestra toast de confirmación)
+
+#### 🚀 **Mejoras de Experiencia**
+
+- **Sin lag**: Arrastre completamente fluido sin "pasos pequeños"
+- **Sin interrupciones**: Las notificaciones no bloquean la interfaz como los alerts
+- **Feedback inmediato**: Visual feedback durante todo el proceso de arrastre
+- **Optimización automática**: El sistema pausa las actualizaciones durante el arrastre para máximo rendimiento
 
 ---
 [← Anterior: Tipos de Datos](./03-tipos-datos.md) | [Siguiente: Gráficos y Visualización →](./05-graficos-visualizacion.md)

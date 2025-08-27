@@ -234,23 +234,112 @@ const RioClaroStationsMap: React.FC = () => {
   const [mapZoom] = useState(12);
   const [selectedMapType, setSelectedMapType] = useState<string>('street');
   const [stationData, setStationData] = useState<StationData[]>([]);
+  const [isDragging, setIsDragging] = useState<string | null>(null);
+  const [stationPositions, setStationPositions] = useState<Record<string, [number, number]>>({});
+  const [dragPosition, setDragPosition] = useState<Record<string, [number, number]>>({});
+  const [cachedIcons, setCachedIcons] = useState<Record<string, Icon>>({});
+  const [toast, setToast] = useState<{show: boolean, message: string, stationName: string, coordinates: string, progress?: boolean} | null>(null);
 
   // Actualizar datos de estaciones cada 3 segundos
   useEffect(() => {
     const updateStations = () => {
-      setStationData(generateStationData());
+      // No actualizar si hay una estación siendo arrastrada
+      if (isDragging) return;
+      
+      const newStationData = generateStationData();
+      // Mantener las posiciones personalizadas si existen
+      const updatedData = newStationData.map(station => ({
+        ...station,
+        coordinates: stationPositions[station.id] || station.coordinates
+      }));
+      setStationData(updatedData);
     };
 
     updateStations(); // Carga inicial
     const interval = setInterval(updateStations, 3000); // Actualizar cada 3 segundos
 
     return () => clearInterval(interval);
-  }, []);
+  }, [stationPositions, isDragging]);
 
-  // Crear iconos personalizados para cada estación
-  const createStationMarker = (station: StationData) => {
+  // Función para mostrar toast de reubicación
+  const showToast = (stationName: string, lat: number, lng: number) => {
+    const coordinates = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    setToast({
+      show: true,
+      message: 'reubicada en:',
+      stationName: stationName,
+      coordinates: coordinates
+    });
+
+    // Auto-hide después de 5 segundos
+    setTimeout(() => {
+      setToast(prev => prev ? { ...prev, show: false } : null);
+    }, 5000);
+
+    // Remover completamente después de la animación
+    setTimeout(() => {
+      setToast(null);
+    }, 5500);
+  };
+
+  // Efecto para animar la barra de progreso del toast
+  useEffect(() => {
+    if (toast?.show) {
+      // Pequeño delay para asegurar que la animación se ejecute
+      const timer = setTimeout(() => {
+        setToast(prev => prev ? { ...prev, progress: true } : null);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [toast?.show]);
+
+  // Función para actualizar la posición de una estación durante el drag
+  const updateDragPosition = (stationId: string, newCoordinates: [number, number]) => {
+    // Solo actualizar la posición temporal durante el drag
+    setDragPosition(prev => ({
+      ...prev,
+      [stationId]: newCoordinates
+    }));
+  };
+
+  // Función para confirmar la nueva posición al finalizar el drag
+  const updateStationPosition = (stationId: string, newCoordinates: [number, number]) => {
+    // Guardar la nueva posición en el estado de posiciones persistentes
+    setStationPositions(prev => ({
+      ...prev,
+      [stationId]: newCoordinates
+    }));
+    
+    // Limpiar posición temporal
+    setDragPosition(prev => {
+      const newDragPos = { ...prev };
+      delete newDragPos[stationId];
+      return newDragPos;
+    });
+    
+    // También actualizar los datos actuales
+    setStationData(prevData =>
+      prevData.map(station =>
+        station.id === stationId
+          ? { ...station, coordinates: newCoordinates }
+          : station
+      )
+    );
+  };
+
+  // Crear iconos personalizados para cada estación (con cache)
+  const getStationMarker = (station: StationData) => {
     const color = getStationStatusColor(station.status);
-    return new Icon({
+    const isBeingDragged = isDragging === station.id;
+    const iconKey = `${station.id}-${station.status}-${isBeingDragged}`;
+    
+    // Usar icono en cache si existe
+    if (cachedIcons[iconKey]) {
+      return cachedIcons[iconKey];
+    }
+    
+    // Crear nuevo icono
+    const newIcon = new Icon({
       iconUrl: `data:image/svg+xml;base64,${btoa(`
         <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="14" fill="${color}" stroke="white" stroke-width="3"/>
@@ -264,6 +353,14 @@ const RioClaroStationsMap: React.FC = () => {
       iconAnchor: [16, 16],
       popupAnchor: [0, -16]
     });
+    
+    // Cache el icono
+    setCachedIcons(prev => ({
+      ...prev,
+      [iconKey]: newIcon
+    }));
+    
+    return newIcon;
   };
 
   const currentMapType = mapTypes.find(type => type.id === selectedMapType) || mapTypes[0];
@@ -317,11 +414,36 @@ const RioClaroStationsMap: React.FC = () => {
       <div className="flex flex-col lg:flex-row h-96 lg:h-[600px]">
         {/* Mapa */}
         <div className="flex-1 relative">
+          <style>{`
+            .leaflet-marker-draggable {
+              cursor: grab !important;
+            }
+            .leaflet-marker-draggable:active {
+              cursor: grabbing !important;
+            }
+            .leaflet-marker-draggable .leaflet-marker-icon {
+              transition: none !important;
+            }
+            .leaflet-marker-draggable:not(.leaflet-drag-target):hover .leaflet-marker-icon {
+              transform: scale(1.05) !important;
+              transition: transform 0.15s ease !important;
+            }
+            .leaflet-marker-draggable.leaflet-drag-target .leaflet-marker-icon {
+              transform: scale(1.1) !important;
+              transition: none !important;
+              filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            }
+            .leaflet-dragging {
+              cursor: grabbing !important;
+            }
+          `}</style>
           <MapContainer
             center={mapCenter}
             zoom={mapZoom}
             style={{ height: '100%', width: '100%' }}
             className="z-0"
+            preferCanvas={true}
+            worldCopyJump={false}
           >
             <MapController center={mapCenter} zoom={mapZoom} />
             <TileLayer
@@ -329,15 +451,46 @@ const RioClaroStationsMap: React.FC = () => {
               attribution={currentMapType.attribution}
             />
 
-            {stationData.map((station) => (
-              <Marker
-                key={station.id}
-                position={station.coordinates}
-                icon={createStationMarker(station)}
-                eventHandlers={{
-                  click: () => setSelectedStation(station)
-                }}
-              >
+            {stationData.map((station) => {
+              // Usar posición temporal durante el drag o posición final
+              const currentPosition = dragPosition[station.id] || 
+                                    stationPositions[station.id] || 
+                                    station.coordinates;
+              
+              return (
+                <Marker
+                  key={station.id}
+                  position={currentPosition}
+                  icon={getStationMarker(station)}
+                  draggable={true}
+                  eventHandlers={{
+                    click: () => setSelectedStation(station),
+                    dragstart: () => {
+                      setIsDragging(station.id);
+                    },
+                    drag: (e) => {
+                      const marker = e.target;
+                      const position = marker.getLatLng();
+                      updateDragPosition(station.id, [position.lat, position.lng]);
+                    },
+                    dragend: (e) => {
+                      const marker = e.target;
+                      const position = marker.getLatLng();
+                      updateStationPosition(station.id, [position.lat, position.lng]);
+                      setIsDragging(null);
+                      
+                      // Mostrar toast de reubicación
+                      showToast(station.name, position.lat, position.lng);
+                      
+                      // Log para desarrolladores
+                      console.log(`🎯 Estación ${station.name} reubicada:`, {
+                        lat: position.lat,
+                        lng: position.lng,
+                        coordinates: `${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}`
+                      });
+                    }
+                  }}
+                >
                 <Popup>
                   <div className="p-3 min-w-[280px]">
                     <div className="flex items-center gap-2 mb-3">
@@ -392,11 +545,23 @@ const RioClaroStationsMap: React.FC = () => {
                         <MapPin className="w-3 h-3 text-gray-500" />
                         <span className="text-gray-600">Altitud: {station.metadata.altitude}m</span>
                       </div>
+                      <div className="flex items-center gap-2 text-xs mt-1">
+                        <MapPin className="w-3 h-3 text-blue-500" />
+                        <span className="text-gray-600">
+                          Coordenadas: {currentPosition[0].toFixed(6)}, {currentPosition[1].toFixed(6)}
+                        </span>
+                      </div>
+                      {isDragging === station.id && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700 border border-blue-200">
+                          🖱️ Arrastrando estación - Suelta para fijar nueva posición
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Popup>
-              </Marker>
-            ))}
+                </Marker>
+              );
+            })}
           </MapContainer>
 
           {/* Leyenda fija en el mapa - Mejorada */}
@@ -460,9 +625,14 @@ const RioClaroStationsMap: React.FC = () => {
 
             {/* Información adicional */}
             <div className="border-t border-gray-200 dark:border-slate-600 pt-3 mt-3">
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between text-xs mb-2">
                 <span className="text-gray-500 dark:text-slate-400">Actualización:</span>
                 <span className="text-cyan-600 dark:text-cyan-400 font-medium">Cada 3s</span>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">
+                <span className="inline-flex items-center gap-1">
+                  🖱️ <span className="font-medium">Arrastra las estaciones</span> para reposicionarlas
+                </span>
               </div>
             </div>
           </div>
@@ -470,21 +640,53 @@ const RioClaroStationsMap: React.FC = () => {
 
         {/* Panel lateral con detalles */}
         <div className="w-full lg:w-80 bg-gray-50 dark:bg-slate-900 p-4 overflow-y-auto">
-          <h3 className="font-semibold text-gray-800 dark:text-white mb-4">
-            Estaciones de Monitoreo
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-800 dark:text-white">
+              Estaciones de Monitoreo
+            </h3>
+            {Object.keys(stationPositions).length > 0 && (
+              <button
+                onClick={() => {
+                  setStationPositions({});
+                  setToast({
+                    show: true,
+                    message: 'posiciones restablecidas',
+                    stationName: '🔄 Estaciones',
+                    coordinates: 'Ubicaciones originales restauradas'
+                  });
+                  
+                  setTimeout(() => {
+                    setToast(prev => prev ? { ...prev, show: false } : null);
+                  }, 5000);
+                  
+                  setTimeout(() => {
+                    setToast(null);
+                  }, 5500);
+                }}
+                className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                title="Restablecer posiciones originales"
+              >
+                🔄 Restablecer
+              </button>
+            )}
+          </div>
 
           <div className="space-y-3">
-            {stationData.map((station) => (
-              <div
-                key={station.id}
-                className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
-                  selectedStation?.id === station.id
-                    ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 shadow-md'
-                    : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-sm'
-                }`}
-                onClick={() => setSelectedStation(station)}
-              >
+            {stationData.map((station) => {
+              const currentPosition = dragPosition[station.id] || 
+                                    stationPositions[station.id] || 
+                                    station.coordinates;
+              
+              return (
+                <div
+                  key={station.id}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                    selectedStation?.id === station.id
+                      ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-sm'
+                  }`}
+                  onClick={() => setSelectedStation(station)}
+                >
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h4 className="font-medium text-gray-800 dark:text-white text-sm">
@@ -524,14 +726,24 @@ const RioClaroStationsMap: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-2 text-xs text-gray-500 dark:text-slate-400">
+                <div className="mt-2 text-xs text-gray-500 dark:text-slate-400 space-y-1">
                   <div className="flex items-center gap-1">
                     <Activity className="w-3 h-3" />
                     <span>Actualizado: {station.lastUpdate.toLocaleTimeString('es-CL')}</span>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>Coords: {currentPosition[0].toFixed(4)}, {currentPosition[1].toFixed(4)}</span>
+                  </div>
+                  {isDragging === station.id && (
+                    <div className="text-blue-600 dark:text-blue-400 font-medium">
+                      🖱️ Arrastrando...
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
 
           {/* Leyenda */}
@@ -585,6 +797,47 @@ const RioClaroStationsMap: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div 
+          className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-500 ease-out ${
+            toast.show 
+              ? 'translate-y-0 opacity-100' 
+              : 'translate-y-4 opacity-0'
+          }`}
+        >
+          <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 px-6 py-4 mx-4 max-w-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">📍</span>
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-gray-800 dark:text-white">
+                  ✅ {toast.stationName} {toast.message}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-slate-400 mt-1 font-mono">
+                  {toast.coordinates}
+                </div>
+              </div>
+            </div>
+            
+            {/* Barra de progreso */}
+            <div className="mt-3 w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
+              <div 
+                className={`bg-green-500 h-1 rounded-full transition-all ease-linear ${
+                  toast.progress ? 'duration-[5000ms]' : 'duration-0'
+                }`}
+                style={{
+                  width: toast.progress ? '0%' : '100%'
+                }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -98,7 +98,7 @@ const Sidebar: React.FC = () => {
             onClick={() => dispatch({ type: 'TOGGLE_REPORTS' })}
             className={`flex items-center ${isAsideCollapsed ? 'justify-center' : 'gap-3'} p-3 rounded-lg transition-colors duration-200 w-full ${
               showReportsPanel 
-                ? 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400' 
+                ? 'bg-cyan-500/10 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400' 
                 : 'hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-400'
             }`}
           >
@@ -109,11 +109,11 @@ const Sidebar: React.FC = () => {
           {/* Tooltip para reportes */}
           <div className="absolute left-full ml-6 top-1/2 transform -translate-y-1/2 w-64 bg-gray-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white text-xs rounded-xl py-3 px-4 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-2xl z-[99999] pointer-events-none border border-gray-700 dark:border-slate-600">
             <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4 text-purple-400" />
+              <FileText className="w-4 h-4 text-cyan-400" />
               <h4 className="font-bold text-sm text-white">Sistema de Reportes</h4>
             </div>
             <p className="text-gray-300 text-xs mb-2">Genera reportes profesionales con análisis IA avanzado de todas las variables monitoreadas.</p>
-            <div className="text-xs text-purple-300">
+            <div className="text-xs text-cyan-300">
               • Formatos: PDF, Excel, CSV<br/>
               • Análisis inteligente incluido<br/>
               • Gráficos y estadísticas

@@ -1,11 +1,25 @@
-/* Leaflet Map Styles - DEBE IR ANTES DE TAILWIND */
+/* ===================================================================
+   === ESTILOS PRINCIPALES DEL DASHBOARD HIDROLÓGICO ===
+   ===================================================================
+   
+   🔧 ORDEN IMPORTANTE: Leaflet DEBE importarse ANTES de Tailwind
+   para evitar conflictos de estilos en mapas
+*/
+
+/* IMPORTACIÓN DE LEAFLET - Para mapas interactivos */
 @import 'leaflet/dist/leaflet.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* IMPORTACIÓN DE TAILWIND CSS - Framework de utilidades */
+@tailwind base;      /* Reset CSS y estilos base */
+@tailwind components; /* Componentes predefinidos */
+@tailwind utilities;  /* Clases utilitarias (p-4, text-center, etc.) */
 
-/* Fix para z-index si hay conflictos */
+/* ===================================================================
+   === FIX PARA MAPAS LEAFLET ===
+   ===================================================================
+   🔧 HARDCODED: z-index 1 para evitar que elementos se superpongan
+   sobre los controles del mapa
+*/
 .leaflet-container {
   z-index: 1;
 }

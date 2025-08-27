@@ -1,18 +1,22 @@
-# 🌊 Sensorificación del Río Claro - Pucón
+# 🌊 Dashboard Hidrológico Río Claro - Pucón
 
-Dashboard de monitoreo hidrológico en tiempo real para el Río Claro en Pucón, Chile.
+> **Sistema de monitoreo en tiempo real para variables hidrológicas del Río Claro en Pucón, Chile.**
 
-## 🚀 Características
+[![React](https://img.shields.io/badge/React-18.3.1-blue)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue)](https://www.typescriptlang.org/)
+[![Tailwind](https://img.shields.io/badge/Tailwind-3.4.1-cyan)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-5.4.2-yellow)](https://vitejs.dev/)
 
-- **Monitoreo en tiempo real** de variables hidrológicas
-- **4 tipos de métricas**: Flujo, Nivel, Caudal y Velocidad
-- **Visualizaciones especializadas** según el tipo de variable
-- **Tooltips informativos** con explicaciones técnicas
-- **Modo pantalla completa** para análisis detallado
-- **Sidebar colapsable** para optimizar espacio
-- **Tema claro/oscuro** con modo automático
-- **Animaciones fluidas** y micro-interacciones
-- **Diseño responsivo** para todos los dispositivos
+## ✨ **Características Principales**
+
+- 🌊 **Monitoreo en Tiempo Real** - Actualización automática cada 3 segundos
+- 📊 **4 Variables Hidrológicas** - Flujo, Nivel, Caudal y Velocidad  
+- 📈 **Gráficos Especializados** - Visualizaciones adaptadas por tipo de métrica
+- 🗺️ **Mapa Interactivo** - Ubicación de estaciones en tiempo real
+- 📱 **Totalmente Responsivo** - Optimizado para desktop, tablet y móvil
+- 🎨 **Sistema de Temas** - Claro, oscuro y automático
+- 📄 **Reportes con IA** - Generación automática de reportes PDF/Excel
+- ⚡ **Rendimiento Optimizado** - Lazy loading y componentes optimizados
 
 ## 📋 Requisitos Previos
 
@@ -101,14 +105,49 @@ El dashboard está optimizado para:
 - **Tablet** (768px - 1023px)
 - **Mobile** (320px - 767px)
 
-## 🎯 Estructura del Proyecto
+## 📁 **Estructura del Proyecto**
 
 ```
 src/
-├── App.tsx          # Componente principal
-├── main.tsx         # Punto de entrada
-├── index.css        # Estilos globales
-└── vite-env.d.ts    # Tipos de Vite
+├── 🧩 components/      # Componentes React organizados por función
+│   ├── charts/         # Gráficos (TimeFlowChart, ComparisonGauge)
+│   ├── dashboard/      # Dashboard principal (DashboardGrid, MetricsCards)
+│   ├── layout/         # Layout (Header, Sidebar, MainContent)
+│   ├── maps/           # Mapas interactivos (RioClaroWeatherMap)
+│   ├── sidebar/        # Panel de reportes
+│   └── ui/             # Componentes reutilizables (Cards, Tooltips, etc.)
+├── 🔧 config/          # Configuración centralizada (constants.ts)
+├── 🔄 contexts/        # Estado global (DashboardContext.tsx)
+├── 🎣 hooks/           # Custom hooks (useOptimizedData.ts)
+├── 📝 types/           # Definiciones TypeScript
+├── 🛠️ utils/          # Funciones auxiliares
+└── 📄 *.tsx           # Archivos principales (App, main)
+```
+
+## 📚 **Documentación Completa**
+
+La documentación está organizada en módulos para fácil navegación:
+
+- **[📖 Documentación Completa](/docs/README.md)** - Índice principal de documentación
+- **[🏗️ Estructura del Proyecto](/docs/01-estructura-proyecto.md)** - Organización detallada
+- **[🔧 Configuración](/docs/02-configuracion.md)** - Variables y configuraciones
+- **[📊 Tipos de Datos](/docs/03-tipos-datos.md)** - Interfaces TypeScript
+- **[🖼️ Layout y Navegación](/docs/04-layout-navegacion.md)** - Componentes de UI
+
+## 🔧 **Configuración Rápida**
+
+**Archivo principal:** `src/config/constants.ts`
+
+```typescript
+// Cambiar título de la aplicación
+APP_CONFIG.name = 'Tu Dashboard Personalizado';
+
+// Cambiar colores principales
+VISUAL_CONFIG.colors.station1 = '#tu-color-estacion-1';
+VISUAL_CONFIG.colors.station2 = '#tu-color-estacion-2';
+
+// Personalizar textos
+TEXTOS_INTERFACE.dashboard.titulo = 'Tu Título Personalizado';
 ```
 
 ## 📈 Datos Simulados

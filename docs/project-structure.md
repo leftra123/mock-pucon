@@ -127,4 +127,4 @@ types/
 - **El estado global:** → `src/contexts/DashboardContext.tsx`
 
 ---
-[← Volver al índice](./README.md) | [Siguiente: Configuración →](./02-configuracion.md)
+[← Back to index](./README.md) | [Next: Configuration →](./configuration.md)

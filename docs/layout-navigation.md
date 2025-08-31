@@ -1,5 +1,7 @@
 # 🖼️ Layout y Navegación
 
+> **Documentación completa de componentes de layout y estructura de la aplicación**
+
 ## 📍 **Ubicación de Archivos**
 
 ```
@@ -96,57 +98,82 @@ const Sidebar = () => {
             className={selectedMetric === metric ? 'bg-cyan-500/10' : ''}
           >
             <Icon />
-            <span>{metricInfo.nombre}</span>
+            <span>{metricName}</span>
           </button>
         ))}
       </nav>
       
-      {/* Botón de reportes */}
-      <button 
-        onClick={toggleReports}
-        className={showReportsPanel ? 'bg-cyan-500/10' : ''}
-      >
-        <FileText />
-        <span>Reportes</span>
-      </button>
+      {/* Panel de reportes */}
+      <ReportsPanel isVisible={showReportsPanel} />
     </aside>
   );
 };
 ```
+
+### Métricas Disponibles
+
+| Métrica | Icono | Descripción | Unidad |
+|---------|-------|-------------|--------|
+| **Flujo** | 🌊 Waves | Volumen de agua que pasa por segundo | m³/s |
+| **Nivel** | 📏 BarChart3 | Altura del agua sobre punto de referencia | m |
+| **Caudal** | 🚰 Droplets | Cantidad específica de agua que fluye | L/s |
+| **Velocidad** | ⚡ Activity | Velocidad del flujo del agua | m/s |
 
 ### Estados del Sidebar
 - **Expandido:** Muestra iconos + texto (pantallas grandes)
 - **Colapsado:** Solo iconos (pantallas pequeñas o colapsado manual)
 - **Tooltips:** Información detallada al hacer hover
 - **Indicadores activos:** Resaltado de métrica/panel seleccionado
+- **Panel de reportes**: Integrado en la barra lateral
 
 ## 📄 **MainContent.tsx - Contenido Principal**
 
-### Administración de Contenido
+### Componentes del MainContent
 ```typescript
-const MainContent = () => {
-  const { showReportsPanel } = state;
+interface MainContentProps {
+  children: React.ReactNode;
+}
+
+const MainContent: React.FC<MainContentProps> = ({ children }) => {
+  const { isFullscreen } = useDashboard();
   
   return (
-    <>
-      {/* Panel de Reportes (condicional) */}
-      {showReportsPanel && (
-        <div className="fixed right-4 top-4 bottom-4 w-80">
-          <LazyReportsPanel />
+    <main className={`flex-1 transition-all duration-300 ${isFullscreen ? 'p-0' : 'p-4 lg:p-6'}`}>
+      <div className="max-w-7xl mx-auto">
+        {/* Grid responsivo para componentes */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {children}
         </div>
-      )}
-      
-      {/* Grid principal del dashboard */}
-      <DashboardGrid {...dashboardProps} />
-      
-      {/* Mapa climático con estaciones arrastrables */}
-      <LazyRioClaroStationsMap />
-      
-      {/* Modal de pantalla completa */}
-      <LazyFullscreenChartModal {...modalProps} />
-    </>
+      </div>
+    </main>
   );
 };
+```
+
+### Layout Grid Structure
+```tsx
+// Estructura típica del contenido principal
+<MainContent>
+  {/* Tarjetas de métricas */}
+  <div className="col-span-1 lg:col-span-12">
+    <MetricsCards data={data} />
+  </div>
+  
+  {/* Gráfico principal */}
+  <div className="col-span-1 lg:col-span-8">
+    <TimeFlowChart data={data} metric={selectedMetric} />
+  </div>
+  
+  {/* Gráfico comparativo */}
+  <div className="col-span-1 lg:col-span-4">
+    <ComparisonGauge data={data} metric={selectedMetric} />
+  </div>
+  
+  {/* Mapa interactivo */}
+  <div className="col-span-1 lg:col-span-12">
+    <RioClaroStationsMap />
+  </div>
+</MainContent>
 ```
 
 ### Gestión de Paneles
@@ -397,4 +424,4 @@ const showToast = (stationName: string, lat: number, lng: number) => {
 - **Optimización automática**: El sistema pausa las actualizaciones durante el arrastre para máximo rendimiento
 
 ---
-[← Anterior: Tipos de Datos](./03-tipos-datos.md) | [Siguiente: Gráficos y Visualización →](./05-graficos-visualizacion.md)
+[← Previous: Data Types](./data-types.md) | [Next: Charts & Visualization →](./charts-visualization.md)

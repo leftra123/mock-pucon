@@ -1,6 +1,12 @@
-# 💻 Guía de Desarrollo
+# 💻 Guía de Desarrollo Completa
 
 ## 🚀 **Primeros Pasos**
+
+### Pre-requisitos de Desarrollo
+- **Node.js** 18+ (recomendado: usar nvm)
+- **npm** 8+ o **yarn** 1.22+
+- **Visual Studio Code** (recomendado con extensiones)
+- **Git** configurado
 
 ### Instalación Inicial
 ```bash
@@ -11,10 +17,15 @@ cd mock-pucon
 # 2. Instalar dependencias
 npm install
 
-# 3. Ejecutar en desarrollo
+# 3. Configurar VSCode (opcional)
+code . --install-extension bradlc.vscode-tailwindcss
+code . --install-extension esbenp.prettier-vscode
+code . --install-extension ms-vscode.vscode-typescript-next
+
+# 4. Ejecutar en desarrollo
 npm run dev
 
-# 4. Abrir navegador
+# 5. Abrir navegador
 # http://localhost:5173
 ```
 
@@ -25,6 +36,8 @@ npm run dev
 | `npm run build` | 📦 Build para producción |
 | `npm run preview` | 👀 Previsualizar build |
 | `npm run lint` | 🔍 Linter de código |
+| `npm run lint:fix` | 🔧 Corregir errores de linting automáticamente |
+| `npm run type-check` | 📝 Verificación de tipos TypeScript |
 
 ## 🗂️ **Flujo de Desarrollo**
 
@@ -199,25 +212,90 @@ const [isLoading, setIsLoading] = useState(false);
 const { data, loading, error } = useOptimizedData();
 ```
 
+## 🏗️ **Arquitectura del Proyecto**
+
+### Patrón Arquitectónico Principal
+**Context + Reducer Pattern** para gestión de estado global, con **Component Composition** para UI.
+
+```typescript
+// Flujo de datos simplificado
+Componentes → useContext(DashboardContext) → dispatch(action) → reducer → nuevo estado → re-render
+```
+
+### Gestión de Estado Global
+```typescript
+interface DashboardState {
+  selectedMetric: MetricType;      // Métrica activa
+  timeRange: TimeRange;            // 30m, 1h, 6h, 24h
+  globalDateRange: DateRange;      // Rango personalizado
+  isAsideCollapsed: boolean;       // UI: panel lateral
+  isFullscreen: boolean;           // UI: modo fullscreen
+  showReportsPanel: boolean;       // UI: panel reportes
+  data: MetricDataPoint[];         // Datos hidrológicos
+  isLoading: boolean;              // Estado de carga
+}
+```
+
+## ⚡ **Optimizaciones de Performance**
+
+### Lazy Loading Implementado
+```typescript
+// Componentes de reportes (no críticos para carga inicial)
+const ReportsPanel = lazy(() => 
+  import('./ReportsPanel').then(module => ({
+    default: module.ReportsPanel
+  }))
+);
+
+// Modal fullscreen (solo se usa cuando se activa)
+const FullscreenChartModal = lazy(() => 
+  import('./FullscreenChartModal').then(module => ({
+    default: module.FullscreenChartModal
+  }))
+);
+```
+
+### Memoización Inteligente
+```typescript
+// Memoización de cálculos costosos
+const chartData = useMemo(() => {
+  return data
+    .filter(point => point.timestamp >= rangeStart)
+    .map(point => ({
+      ...point,
+      formattedTime: formatTime(point.timestamp)
+    }));
+}, [data, rangeStart]); // Dependencias estables
+```
+
 ## 🛠️ **Herramientas de Desarrollo**
 
 ### Extensiones VS Code Recomendadas
-- **ES7+ React/Redux/React-Native snippets** - Snippets útiles
-- **TypeScript Importer** - Auto imports
-- **Tailwind CSS IntelliSense** - Autocompletado de clases
-- **Prettier** - Formato automático
-- **ESLint** - Detección de errores
+```json
+// .vscode/extensions.json
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode", 
+    "ms-vscode.vscode-typescript-next",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense"
+  ]
+}
+```
 
 ### Configuración de Editor
 ```json
 // .vscode/settings.json
 {
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
   "tailwindCSS.includeLanguages": {
-    "typescript": "typescript",
-    "typescriptreact": "typescriptreact"
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
   }
 }
 ```
@@ -297,4 +375,4 @@ const apiUrl = import.meta.env.VITE_API_URL;
 - [ ] 📱 Responsive en diferentes pantallas
 
 ---
-[← Anterior: Layout y Navegación](./04-layout-navegacion.md) | [Siguiente: Debugging →](./14-debugging.md)
+[← Previous: UI Components](./ui-components.md) | [Next: Advanced Documentation →](./development-reference.md)

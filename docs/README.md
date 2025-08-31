@@ -4,30 +4,35 @@
 
 Esta documentación está dividida en módulos para facilitar la navegación y comprensión del proyecto.
 
-### 🏗️ **Estructura General**
-- [📁 Estructura del Proyecto](./01-estructura-proyecto.md) - Organización de carpetas y archivos
-- [🔧 Configuración](./02-configuracion.md) - Variables, constantes y configuraciones
-- [📊 Tipos de Datos](./03-tipos-datos.md) - TypeScript interfaces y tipos
+### 🏗️ **Project Fundamentals**
+- [📁 Project Structure](./project-structure.md) - Folder organization and file structure
+- [🔧 Configuration](./configuration.md) - Variables, constants and settings
+- [📊 Data Types](./data-types.md) - TypeScript interfaces and types
 
-### 🎨 **Componentes de UI**
-- [🖼️ Layout y Navegación](./04-layout-navegacion.md) - Header, Sidebar, Layout principal
-- [📈 Gráficos y Visualización](./05-graficos-visualizacion.md) - Charts, Gauges, Sparklines
-- [🧩 Componentes Reutilizables](./06-componentes-ui.md) - Cards, Tooltips, Botones
+### 🎨 **UI Components**
+- [🖼️ Layout & Navigation](./layout-navigation.md) - Header, Sidebar, Layout structure  
+- [📈 Charts & Visualization](./charts-visualization.md) - Charts, Gauges, Sparklines
+- [🧩 Reusable UI Components](./ui-components.md) - Cards, Tooltips, Buttons, Modals
 
-### 📊 **Sistema de Datos**
-- [🔄 Contexto y Estado](./07-contexto-estado.md) - DashboardContext, manejo de estado global
-- [🎣 Hooks Personalizados](./08-hooks.md) - Hooks para datos optimizados
-- [🛠️ Utilidades](./09-utilidades.md) - Funciones auxiliares y helpers
+### 📊 **Data System**
+- [🔄 Context & State](./07-contexto-estado.md) - DashboardContext, global state management
+- [🎣 Custom Hooks](./08-hooks.md) - Hooks for optimized data handling
+- [🛠️ Utilities](./09-utilidades.md) - Helper functions and utilities
 
-### 🗺️ **Funcionalidades Especiales**
-- [🗺️ Mapas Interactivos](./10-mapas.md) - Implementación de mapas con Leaflet
-- [📄 Sistema de Reportes](./11-reportes.md) - Generación de PDFs y exportación
-- [🎭 Temas y Estilos](./12-temas-estilos.md) - Sistema de temas claro/oscuro
+### 🗺️ **Special Features**
+- [🗺️ Interactive Maps](./10-mapas.md) - Leaflet maps implementation
+- [📄 Reports System](./11-reportes.md) - PDF generation and data export
+- [🎭 Themes & Styling](./12-temas-estilos.md) - Light/dark theme system
 
-### 🚀 **Desarrollo**
-- [💻 Guía de Desarrollo](./13-desarrollo.md) - Cómo trabajar con el proyecto
-- [🔍 Debugging y Testing](./14-debugging.md) - Herramientas de desarrollo
-- [📦 Deployment](./15-deployment.md) - Cómo desplegar la aplicación
+### 🚀 **Development**
+- [💻 Development Guide](./development-guide.md) - Architecture, performance and tooling
+- [🔍 Debugging & Testing](./14-debugging.md) - Development tools and testing
+- [📦 Deployment](./15-deployment.md) - How to deploy the application
+
+### 📚 **Advanced Documentation**
+- [🧩 Components Reference](./components-reference.md) - Complete component documentation
+- [⚙️ Development Reference](./development-reference.md) - Architecture, testing, performance
+- [🏗️ Technical Decisions](./technical-decisions.md) - Technology choices and patterns
 
 ---
 

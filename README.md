@@ -128,11 +128,11 @@ src/
 
 La documentación está organizada en módulos para fácil navegación:
 
-- **[📖 Documentación Completa](/docs/README.md)** - Índice principal de documentación
-- **[🏗️ Estructura del Proyecto](/docs/01-estructura-proyecto.md)** - Organización detallada
-- **[🔧 Configuración](/docs/02-configuracion.md)** - Variables y configuraciones
-- **[📊 Tipos de Datos](/docs/03-tipos-datos.md)** - Interfaces TypeScript
-- **[🖼️ Layout y Navegación](/docs/04-layout-navegacion.md)** - Componentes de UI
+- **[📖 Documentation Index](/docs/README.md)** - Main documentation index
+- **[🏗️ Project Structure](/docs/project-structure.md)** - Detailed organization
+- **[🔧 Configuration](/docs/configuration.md)** - Variables and settings
+- **[📊 Data Types](/docs/data-types.md)** - TypeScript interfaces
+- **[🖼️ Layout & Navigation](/docs/layout-navigation.md)** - UI components structure
 
 ## 🔧 **Configuración Rápida**
 

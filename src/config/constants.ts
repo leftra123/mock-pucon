@@ -181,7 +181,7 @@ export const USER_CONFIG = {
   // 🔧 HARDCODED: Usuario de demostración para el header
   // En producción, estos datos vendrían de autenticación real
   defaultUser: {
-    name: 'Luis Loyola',    // 🔧 HARDCODED: Nombre del operador del sistema
+    name: 'Eric',    // 🔧 HARDCODED: Nombre del operador del sistema
     avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=1', // 🔧 HARDCODED: URL de imagen de perfil
     status: 'En línea',     // 🔧 HARDCODED: Estado del usuario
   }
